@@ -1,7 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, stepCountIs, streamText, UIMessage, tool as createTool, smoothStream } from 'ai';
 import { experimental_createMCPClient as createMCPClient } from 'ai';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { z } from 'zod';
 
 // Allow streaming responses up to 30 seconds
