@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display, Playfair } from "next/font/google";
 import "./globals.css";
+import { WindowProvider } from "@/contexts/window-context";
+import { WindowManager } from "@/components/window-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -9,6 +11,16 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const playfair = Playfair({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
   subsets: ["latin"],
 });
 
@@ -25,9 +37,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${playfair.variable} antialiased overscroll-contain overflow-hidden`}
       >
-        {children}
+        <WindowProvider>
+          {children}
+          <WindowManager />
+        </WindowProvider>
       </body>
     </html>
   );

@@ -1,103 +1,120 @@
-import Image from "next/image";
+"use client";
+
+import { ReactNode, useMemo, useState } from "react";
+import { useChat } from '@ai-sdk/react';
+import { Message } from "@/components/message";
+import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { ChatInput } from "@/components/chat-input";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { DefaultChatTransport } from "ai";
+
+interface SuggestedAction {
+  title: string;
+  label: string;
+  action: string;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+    }),
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [input, setInput] = useState<string>("");
+
+  const onSubmit = useMemo(() => async (inputValue: string) => {
+    sendMessage({
+      text: inputValue,
+    });
+    setInput("");
+  }, [sendMessage, setInput]);
+
+  const [messagesContainerRef, messagesEndRef] =
+    useScrollToBottom<HTMLDivElement>();
+
+  const suggestedActions: SuggestedAction[] = [
+    { title: "npm/ai", label: "How do I stream responses with AI SDK?", action: "In npm AI SDK, how do I stream responses?" },
+    { title: "pypi/sqlalchemy", label: "When does ORM relationship loading choose selectin vs. joined vs. subquery", action: "In SQLAlchemy, when does ORM relationship loading choose selectin vs. joined vs. subquery" },
+    {
+      title: "pypi/numpy",
+      label: "What environment variables or compile-time flags switch kernels",
+      action: "In numpy, what environment variables or compile-time flags switch kernels?",
+    }
+  ];
+
+  const backgrounds = [
+    "asset/background/1.png",
+    "asset/background/2.png",
+    "asset/background/3.png",
+    "asset/background/4.png",
+  ];
+
+  return (
+    <div className="flex flex-col justify-between pb-20 h-dvh bg-white">
+      <div className="flex flex-col justify-between overflow-y-scroll">
+        <div
+          ref={messagesContainerRef}
+          className="py-20"
+        >
+          <div className="w-lg flex flex-col items-start gap-3 mx-auto">
+            {messages.length === 0 && (
+              <motion.div className="px-4 w-full md:px-0">
+                <div className="rounded-xs p-6 flex flex-col gap-6">
+                  <h1 className="font-display text-pretty text-4xl font-medium tracking-tight">
+                    Expert-Level Knowledge on any open-source library
+                  </h1>
+                  <div className="flex flex-col gap-2">
+                    <p>
+                      LLMs have knowledge cutoffs based on their training data.
+                    </p>
+                    <p>
+                      Chroma indexed 18,000+ codebases to create an MCP that provides your code agent
+                      up-to-date knowledge on any open-source library or SDK.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            <div className="grid gap-2 w-full px-4 md:px-0 mx-auto mb-4">
+              {messages.length === 0 &&
+                suggestedActions.map((action, index) => (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.01 * index }}
+                    key={index}
+                    className={index > 1 ? "hidden sm:block" : "block"}
+                  >
+                    <button
+                      onClick={() => onSubmit(action.action)}
+                      className="w-full text-left border border-neutral-400 text-zinc-800 rounded-lg p-2 text-sm relative overflow-hidden transition-colors flex flex-col group hover:bg-neutral-100"
+                    >
+                      <div className={`absolute inset-0 opacity-0 transition-opacity duration-400 group-hover:bg-gray-100`} />
+                      <span className="font-medium relative z-10">{action.title}</span>
+                      <span className="text-zinc-500 dark:text-zinc-400 relative z-10">
+                        {action.label}
+                      </span>
+                    </button>
+                  </motion.div>
+                ))}
+            </div>
+            {messages.map((message) => (
+              <Message key={message.id} message={message} />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="mt-[-10px] w-lg mx-auto">
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          onSubmit={onSubmit}
+        />
+      </div>
     </div>
   );
 }
