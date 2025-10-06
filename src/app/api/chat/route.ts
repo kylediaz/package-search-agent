@@ -9,7 +9,7 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
     const { messages }: { messages: UIMessage[] } = await req.json();
-
+    console.log(messages);
     try {
         const httpTransport = new StreamableHTTPClientTransport(
             new URL('https://mcp.trychroma.com/package-search/v1'),
@@ -58,8 +58,8 @@ export async function POST(req: Request) {
 
         return result.toUIMessageStreamResponse({
             sendReasoning: true,
-            onError: () => {
-                return `An error occurred, please try again!`;
+            onError: (error) => {
+                return `An error occurred, please try again! ${error}`;
             },
         });
     } catch (error) {

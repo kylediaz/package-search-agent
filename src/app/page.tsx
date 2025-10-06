@@ -16,7 +16,7 @@ interface SuggestedAction {
 }
 
 export default function Home() {
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
@@ -38,9 +38,24 @@ export default function Home() {
     { title: "npm/ai", label: "How do I stream responses with AI SDK?", action: "In npm AI SDK, how do I stream responses?" },
     { title: "pypi/sqlalchemy", label: "When does ORM relationship loading choose selectin vs. joined vs. subquery", action: "In SQLAlchemy, when does ORM relationship loading choose selectin vs. joined vs. subquery" },
     {
-      title: "pypi/numpy",
+      title: "pypi/numpy", 
       label: "What environment variables or compile-time flags switch kernels",
-      action: "In numpy, what environment variables or compile-time flags switch kernels?",
+      action: "In numpy, what environment variables or compile-time flags switch kernels?"
+    },
+    {
+      title: "crates/actix",
+      label: "Actor supervision and child actor management",
+      action: "In Actix, how can actors supervise and manage child actors? What supervision strategies are available?"
+    },
+    {
+      title: "pypi/httpx",
+      label: "Connection pools and HTTP/2 multiplexing connection selection",
+      action: "In httpx, how do connection pools and HTTP/2 multiplexing actually select connections under limits?"
+    },
+    {
+      title: "pypi/jax",
+      label: "Array API compliance behavioral differences",
+      action: "For Array API compliance, what behavioral differences (type promotion, nan semantics, out-of-place ops) must a library document?"
     }
   ];
 
@@ -103,6 +118,16 @@ export default function Home() {
             {messages.map((message) => (
               <Message key={message.id} message={message} />
             ))}
+            {status === "submitted" && (
+              <div className="text-gray-500 font-serif px-3 text-lg">
+                Thinking...
+              </div>
+            )}
+            {status === "error" && (
+              <div className="text-red-500">
+                Error: {error?.message}
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         </div>
